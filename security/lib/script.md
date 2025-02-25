@@ -1,17 +1,17 @@
-# API测试脚本
+# API Test Scripts
 
-## 概述
-本文档包含了JIRA插件的API测试脚本，用于测试各个接口的功能。
+## Overview
+This document contains API test scripts for the JIRA plugin, used to test various interface functionalities.
 
-## 环境配置
+## Environment Setup
 ```bash
-# 设置基础URL和测试数据
+# Set base URL and test data
 BASE_URL="http://localhost:2990/jira"
 PROJECT_KEY="TEST"
 TEST_CYCLE="Cycle1"
 COOKIE="JSESSIONID=your_session_id"
 
-# 通用请求头
+# Common request headers
 HEADERS=(
   -H "Content-Type: application/json;charset=UTF-8"
   -H "Cookie: ${COOKIE}"
@@ -22,32 +22,32 @@ HEADERS=(
 )
 ```
 
-## 测试脚本
+## Test Scripts
 ```bash
 #!/bin/bash
 
 echo "Starting API Tests..."
 
-# 1. 测试周期相关API测试
+# 1. Test Cycle API Tests
 echo "=== Test Cycle API Tests ==="
 
-## 1.1 获取所有测试周期
+## 1.1 Get All Test Cycles
 curl -X GET "${BASE_URL}/plugins/servlet/testcycles?projectKey=${PROJECT_KEY}" \
   "${HEADERS[@]}"
 
-## 1.2 创建新测试周期
+## 1.2 Create New Test Cycle
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
   -d "{\"testCycle\":\"NewCycle-$(date +%s)\",\"projectKey\":\"${PROJECT_KEY}\"}"
 
-## 1.3 使用无效项目密钥
+## 1.3 Invalid Project Key Test
 curl -X GET "${BASE_URL}/plugins/servlet/testcycles?projectKey=INVALID" \
   "${HEADERS[@]}"
 
-# 2. 文件上传测试
+# 2. File Upload Tests
 echo "=== File Upload Tests ==="
 
-## 2.1 上传CSV文件
+## 2.1 Upload CSV File
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
   -H "Content-Type: multipart/form-data" \
@@ -56,7 +56,7 @@ curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   -F "file=@test-results.csv" \
   -F "attachment=on"
 
-## 2.2 上传JSON文件
+## 2.2 Upload JSON File
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
   -H "Content-Type: multipart/form-data" \
@@ -64,7 +64,7 @@ curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   -F "testCycle=${TEST_CYCLE}" \
   -F "file=@test-results.json"
 
-## 2.3 上传ZIP文件
+## 2.3 Upload ZIP File
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
   -H "Content-Type: multipart/form-data" \
@@ -73,7 +73,7 @@ curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   -F "file=@results.zip" \
   -F "attachment=on"
 
-## 2.4 Dry Run模式测试
+## 2.4 Dry Run Mode Test
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
   -H "Content-Type: multipart/form-data" \
@@ -82,14 +82,14 @@ curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   -F "file=@test-results.csv" \
   -F "dryRun=on"
 
-# 3. 测试用例API测试
+# 3. Test Case API Tests
 echo "=== Test Case API Tests ==="
 
-## 3.1 获取项目测试用例
+## 3.1 Get Project Test Cases
 curl -X GET "${BASE_URL}/plugins/servlet/testcases?projectKey=${PROJECT_KEY}" \
   "${HEADERS[@]}"
 
-## 3.2 创建测试用例结果
+## 3.2 Create Test Case Result
 curl -X POST "${BASE_URL}/plugins/servlet/testcases" \
   "${HEADERS[@]}" \
   -d '{
@@ -99,14 +99,14 @@ curl -X POST "${BASE_URL}/plugins/servlet/testcases" \
     "comment": "Automated test execution"
   }'
 
-# 4. 特殊场景测试
+# 4. Special Case Tests
 echo "=== Special Cases Tests ==="
 
-## 4.1 无权限访问
+## 4.1 Unauthorized Access
 curl -X GET "${BASE_URL}/plugins/servlet/testcycles?projectKey=${PROJECT_KEY}" \
   -H "Cookie: invalid_session"
 
-## 4.2 上传空文件
+## 4.2 Empty File Upload
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
   -H "Content-Type: multipart/form-data" \
@@ -114,7 +114,7 @@ curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   -F "testCycle=${TEST_CYCLE}" \
   -F "file=@empty.csv"
 
-## 4.3 上传超大文件
+## 4.3 Large File Upload
 dd if=/dev/zero of=large_file.csv bs=1M count=11
 curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   "${HEADERS[@]}" \
@@ -124,13 +124,13 @@ curl -X POST "${BASE_URL}/plugins/servlet/submit" \
   -F "file=@large_file.csv"
 rm large_file.csv
 
-## 4.4 并发请求测试
+## 4.4 Concurrent Request Test
 for i in {1..5}; do
   curl -X GET "${BASE_URL}/plugins/servlet/testcases?projectKey=${PROJECT_KEY}" \
     "${HEADERS[@]}" &
 done
 
-## 4.5 测试不同状态值
+## 4.5 Different Status Values Test
 for status in "Pass" "Fail" "Blocked" "In Process" "Invalid"; do
   curl -X POST "${BASE_URL}/plugins/servlet/testcases" \
     "${HEADERS[@]}" \
@@ -143,7 +143,7 @@ for status in "Pass" "Fail" "Blocked" "In Process" "Invalid"; do
 done
 ```
 
-## 测试数据
+## Test Data
 
 ### 1. test-results.csv
 ```csv
@@ -186,7 +186,7 @@ TEST-4,In Process,Profile Test,Testing profile updates,2024-02-25 13:00:00,profi
 }
 ```
 
-### 3. results.zip结构
+### 3. results.zip Structure
 ```
 results.zip/
   ├── test1.csv
@@ -198,28 +198,28 @@ results.zip/
       └── debug.log
 ```
 
-## 使用说明
+## Usage Instructions
 ```bash
-# 1. 创建测试数据
+# 1. Create test data
 mkdir -p test_data/screenshots test_data/logs
 cp test-results.csv test_data/
 cp test-results.json test_data/
 touch test_data/logs/debug.log
 zip -r results.zip test_data/
 
-# 2. 运行测试
+# 2. Run tests
 ./test-api.sh
 
-# 3. 查看结果
+# 3. View results
 ./test-api.sh > test_results.log 2>&1
 ```
 
-## 测试覆盖范围
-- 不同文件格式上传(CSV/JSON/ZIP)
-- 各种状态值测试
-- 错误处理
-- 并发请求
-- 权限验证
-- 文件大小限制
-- Dry Run功能
+## Test Coverage
+- Different file format uploads (CSV/JSON/ZIP)
+- Various status value tests
+- Error handling
+- Concurrent requests
+- Authorization validation
+- File size limits
+- Dry Run functionality
 ``` 
